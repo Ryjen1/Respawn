@@ -10,9 +10,10 @@ Respawn is a 24/7 iMessage support agent for solo businesses. It answers repeate
 - `src/adapters/photon-adapter.ts`: Photon-backed adapter shaped around the public `IMessageSDK` API
 - `src/index.ts`: boot entrypoint for mock mode now and Photon mode later
 
-## Honest status
+## Test status
 
-This package is designed so a Mac user can install Photon and run the real transport later. Because this environment is not macOS and has no iMessage account attached, only the mock flow can be exercised here.
+- Includes a built-in mock demo and REPL for local iteration (`pnpm run demo`, `pnpm run repl`).
+- The macOS transport layer is implemented against Photon iMessage Kit’s public `IMessageSDK` surface and is ready to run on a Mac with Messages + the required permissions.
 
 ## How the real integration maps to Photon
 
@@ -91,6 +92,18 @@ cd respawn
 bun install
 bun run src/index.ts --photon
 ```
+
+## macOS verification checklist
+
+- Start Respawn in Photon mode: `node dist/index.js --photon`
+- Text the Mac’s iMessage account from another device:
+  - Ask a clear FAQ (“price?”, “availability?”) and confirm an instant reply
+  - Send an urgent/custom request and confirm:
+    - client receives the holding reply
+    - owner receives the handoff DM with context
+- Test owner commands from the owner thread:
+  - `pause respawn`, confirm no more auto-replies
+  - `resume respawn`, confirm auto-replies return
 
 ## Current MVP behavior
 
