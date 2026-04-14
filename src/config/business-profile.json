@@ -4,7 +4,7 @@
   "ownerTarget": "iMessage;+15550001111",
   "approvedSenders": "*",
   "unknownSenderPolicy": "reply-briefly",
-  "handoffReply": "Got it — I have shared this with the owner and you will get a reply shortly.",
+  "handoffReply": "Got it - I have shared this with the owner and you will get a reply shortly.",
   "fallbackReply": "Thanks for reaching out. Are you asking about pricing, availability, booking, or delivery?",
   "escalationKeywords": [
     "urgent",

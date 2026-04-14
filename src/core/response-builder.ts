@@ -1,15 +1,25 @@
 import type { BusinessProfile, ClientSnapshot, FaqEntry } from "../types/index.js";
-import { applyContractions, stablePick } from "./response-style.js";
+import { applyContractions, looksRepeated, pickVariant } from "./response-style.js";
 
 function prefix(snapshot: ClientSnapshot): string {
   if (!snapshot.isReturning) return "";
 
   const key = snapshot.priorMessages.at(-1)?.guid ?? snapshot.priorMessages.at(-1)?.id ?? "returning";
-  if (snapshot.style.formality === "formal") return "Welcome back. ";
-  if (snapshot.style.formality === "casual") {
-    return stablePick(key, ["Hey again. ", "Good to hear from you again. ", "Hey — welcome back. "]);
+  if (snapshot.style.formality === "formal") {
+    return pickVariant(key, ["Welcome back. ", "Welcome back - happy to help. ", "Good to hear from you again. "], snapshot.priorMessages);
   }
-  return stablePick(key, ["Welcome back. ", "Good to have you back. ", "Nice to hear from you again. "]);
+  if (snapshot.style.formality === "casual") {
+    return pickVariant(
+      key,
+      ["Hey again. ", "Good to hear from you again. ", "Hey, welcome back. ", ""],
+      snapshot.priorMessages,
+    );
+  }
+  return pickVariant(
+    key,
+    ["Welcome back. ", "Good to have you back. ", "Nice to hear from you again. ", ""],
+    snapshot.priorMessages,
+  );
 }
 
 export function buildFaqReply(
@@ -19,6 +29,8 @@ export function buildFaqReply(
   topicCount: number,
 ): string {
   const key = snapshot.priorMessages.at(-1)?.guid ?? snapshot.priorMessages.at(-1)?.id ?? faq.id;
+
+  const alreadyAnswered = looksRepeated(snapshot.priorMessages, faq.answer);
 
   const serviceContext =
     snapshot.style.brevity === "short"
@@ -33,12 +45,26 @@ export function buildFaqReply(
       ? " I answered the main part first, and you can send the other detail after this if needed."
       : "";
 
-  const softener =
+  const softenerBase =
     snapshot.style.formality === "casual"
-      ? stablePick(key, ["", "", "Sure thing. ", "Got you. "])
+      ? ["", "", "Sure thing. ", "Got you. ", "Yep. ", "No problem. "]
       : snapshot.style.formality === "formal"
-        ? stablePick(key, ["", "", "Certainly. "])
-        : stablePick(key, ["", "", "Of course. "]);
+        ? ["", "", "Certainly. ", "Of course. "]
+        : ["", "", "Of course. ", "Happy to help. "];
+
+  const softener = pickVariant(key, softenerBase, snapshot.priorMessages);
+
+  if (alreadyAnswered) {
+    const lead = pickVariant(
+      key,
+      snapshot.style.formality === "casual"
+        ? ["Still the same: ", "Yep - ", "Same as earlier: ", ""]
+        : ["Still the same: ", "As mentioned earlier, ", ""],
+      snapshot.priorMessages,
+    );
+    const repeat = `${lead}${faq.answer}${faq.cta && snapshot.style.brevity !== "short" ? ` ${faq.cta}` : ""}`.trim();
+    return snapshot.style.usesContractions ? applyContractions(repeat) : repeat;
+  }
 
   const base = `${softener}${prefix(snapshot)}${faq.answer}${serviceContext}${faq.cta ? ` ${faq.cta}` : ""}${clarification}`.trim();
   return snapshot.style.usesContractions ? applyContractions(base) : base;

@@ -6,7 +6,7 @@ import {
 } from "./intent-detection.js";
 import { buildClientSnapshot } from "./client-context.js";
 import { buildFaqReply, buildOwnerEscalationNotice } from "./response-builder.js";
-import { applyContractions, stablePick } from "./response-style.js";
+import { applyContractions, pickVariant } from "./response-style.js";
 import type { AgentDecision, BusinessProfile, IncomingMessage } from "../types/index.js";
 
 function isApprovedSender(sender: string, profile: BusinessProfile): boolean {
@@ -65,11 +65,16 @@ export class RespawnSupportAgent {
         return { kind: "ignore", reason: "Unknown sender ignored by policy" };
       }
       const key = message.guid || message.id;
-      const reply = stablePick(key, [
-        "Thanks for reaching out — I’ll have the owner reply shortly.",
-        "Thanks for reaching out. I’ll get the owner to reply shortly.",
-        "Thanks for reaching out. The owner will reply soon.",
-      ]);
+      const reply = pickVariant(
+        key,
+        [
+          "Thanks for reaching out - I'll have the owner reply shortly.",
+          "Thanks for reaching out. I'll get the owner to reply shortly.",
+          "Thanks for reaching out. The owner will reply soon.",
+          "Got it. The owner will reply shortly.",
+        ],
+        [],
+      );
       await this.adapter.send(message.chatId, reply);
       return { kind: "faq", replyText: reply, reason: "Unknown sender brief reply" };
     }
@@ -172,15 +177,25 @@ export class RespawnSupportAgent {
 
     const fallback =
       snapshot.style.formality === "casual"
-        ? stablePick(key, [
-            "Quick one — is this about pricing, availability, booking, or delivery?",
-            "Got you. Is this pricing, availability, booking, or delivery?",
-            "Which one is it: pricing, availability, booking, or delivery?",
-          ])
-        : stablePick(key, [
-            this.profile.fallbackReply,
-            "Thanks for reaching out. Is this about pricing, availability, booking, or delivery?",
-          ]);
+        ? pickVariant(
+            key,
+            [
+              "Quick one - is this about pricing, availability, booking, or delivery?",
+              "Got you. Is this pricing, availability, booking, or delivery?",
+              "Which one is it: pricing, availability, booking, or delivery?",
+              "Just to confirm - pricing, availability, booking, or delivery?",
+            ],
+            snapshot.priorMessages,
+          )
+        : pickVariant(
+            key,
+            [
+              this.profile.fallbackReply,
+              "Thanks for reaching out. Is this about pricing, availability, booking, or delivery?",
+              "To make sure I help fast - is this pricing, availability, booking, or delivery?",
+            ],
+            snapshot.priorMessages,
+          );
 
     return {
       kind: "faq",

@@ -9,6 +9,14 @@ function hasAny(lower: string, phrases: readonly string[]): boolean {
   return phrases.some((phrase) => lower.includes(phrase));
 }
 
+function normalize(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function inferResponseStyle(messages: readonly IncomingMessage[]): ResponseStyle {
   const ownerSamples = messages
     .filter((message) => message.isFromMe && typeof message.text === "string" && message.text.trim().length > 0)
@@ -38,7 +46,7 @@ export function inferResponseStyle(messages: readonly IncomingMessage[]): Respon
   ];
 
   const usesContractions =
-    /(\bi['’]m\b|\bi['’]ll\b|\bi['’]ve\b|\bcan['’]t\b|\bdon['’]t\b|\bwon['’]t\b)/i.test(joined) ||
+    /(\bi'm\b|\bi'll\b|\bi've\b|\bcan't\b|\bdon't\b|\bwon't\b)/i.test(joined) ||
     hasAny(lower, ["gonna", "wanna", "gotcha", "no worries"]);
 
   const usesExclamation = joined.includes("!");
@@ -86,3 +94,39 @@ export function stablePick(key: string, options: readonly string[]): string {
   return options[idx]!;
 }
 
+export function pickVariant(
+  key: string,
+  options: readonly string[],
+  recentMessages: readonly IncomingMessage[],
+): string {
+  if (options.length === 0) return "";
+
+  const recentOut = recentMessages
+    .filter((message) => message.isFromMe && typeof message.text === "string" && message.text.trim().length > 0)
+    .slice(-4)
+    .map((message) => normalize(message.text ?? ""))
+    .join(" | ");
+
+  const filtered = options.filter((option) => {
+    if (!option) return true;
+    const needle = normalize(option);
+    if (!needle) return true;
+    return !recentOut.includes(needle);
+  });
+
+  const pool = filtered.length > 0 ? filtered : options;
+  return stablePick(key, pool);
+}
+
+export function looksRepeated(
+  recentMessages: readonly IncomingMessage[],
+  text: string,
+): boolean {
+  const needle = normalize(text);
+  if (!needle) return false;
+  const recentOut = recentMessages
+    .filter((message) => message.isFromMe && typeof message.text === "string" && message.text.trim().length > 0)
+    .slice(-6)
+    .map((message) => normalize(message.text ?? ""));
+  return recentOut.some((out) => out.includes(needle.slice(0, 40)));
+}

@@ -13,7 +13,7 @@ Respawn is a 24/7 iMessage support agent for solo businesses. It answers repeate
 ## Test status
 
 - Includes a built-in mock demo and REPL for local iteration (`pnpm run demo`, `pnpm run repl`).
-- The macOS transport layer is implemented against Photon iMessage Kit’s public `IMessageSDK` surface and is ready to run on a Mac with Messages + the required permissions.
+- The macOS transport layer is implemented against Photon iMessage Kit's public `IMessageSDK` surface and is ready to run on a Mac with Messages + the required permissions.
 
 ## How the real integration maps to Photon
 
@@ -57,9 +57,9 @@ pnpm install
 pnpm run demo
 ```
 
-## Interactive local “chat” test (no Mac needed)
+## Interactive local "chat" test (no Mac needed)
 
-This is a simple REPL that simulates incoming iMessages and shows Respawn’s replies plus any owner handoff DM.
+This is a simple REPL that simulates incoming iMessages and shows Respawn's replies plus any owner handoff DM.
 
 ```bash
 cd respawn
@@ -96,8 +96,8 @@ bun run src/index.ts --photon
 ## macOS verification checklist
 
 - Start Respawn in Photon mode: `node dist/index.js --photon`
-- Text the Mac’s iMessage account from another device:
-  - Ask a clear FAQ (“price?”, “availability?”) and confirm an instant reply
+- Text the Mac's iMessage account from another device:
+  - Ask a clear FAQ ("price?", "availability?") and confirm an instant reply
   - Send an urgent/custom request and confirm:
     - client receives the holding reply
     - owner receives the handoff DM with context
