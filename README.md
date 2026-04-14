@@ -108,6 +108,7 @@ bun run src/index.ts --photon
 ## Current MVP behavior
 
 - answers common FAQ topics like price, availability, booking, delivery, and refunds
+- adapts reply tone and brevity from recent thread history (so it reads less like a bot)
 - escalates urgent, long, complex, or attachment-heavy messages
 - sends the owner a structured private handoff note
 - supports owner commands like `pause respawn`, `resume respawn`, and `status`

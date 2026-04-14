@@ -6,6 +6,7 @@ import {
 } from "./intent-detection.js";
 import { buildClientSnapshot } from "./client-context.js";
 import { buildFaqReply, buildOwnerEscalationNotice } from "./response-builder.js";
+import { applyContractions, stablePick } from "./response-style.js";
 import type { AgentDecision, BusinessProfile, IncomingMessage } from "../types/index.js";
 
 function isApprovedSender(sender: string, profile: BusinessProfile): boolean {
@@ -63,11 +64,14 @@ export class RespawnSupportAgent {
       if (this.profile.unknownSenderPolicy === "ignore") {
         return { kind: "ignore", reason: "Unknown sender ignored by policy" };
       }
-      await this.adapter.send(
-        message.chatId,
-        "Thanks for reaching out. The owner will get back to you shortly.",
-      );
-      return { kind: "faq", replyText: "Thanks for reaching out. The owner will get back to you shortly.", reason: "Unknown sender brief reply" };
+      const key = message.guid || message.id;
+      const reply = stablePick(key, [
+        "Thanks for reaching out — I’ll have the owner reply shortly.",
+        "Thanks for reaching out. I’ll get the owner to reply shortly.",
+        "Thanks for reaching out. The owner will reply soon.",
+      ]);
+      await this.adapter.send(message.chatId, reply);
+      return { kind: "faq", replyText: reply, reason: "Unknown sender brief reply" };
     }
 
     const decision = await this.decide(message);
@@ -115,25 +119,38 @@ export class RespawnSupportAgent {
     });
     const snapshot = buildClientSnapshot(message, history, this.profile);
     const text = message.text?.trim() ?? "";
+    const key = message.guid || message.id;
 
     if (message.attachments.length > 0) {
-      return this.escalate(message, "Client sent an attachment", this.profile.handoffReply);
+      return this.escalate(
+        message,
+        "Client sent an attachment",
+        this.humanizeConfiguredReply(this.profile.handoffReply, snapshot.style),
+      );
     }
 
     if (!text) {
       return this.escalate(
         message,
         "Empty or unsupported client message",
-        this.profile.handoffReply,
+        this.humanizeConfiguredReply(this.profile.handoffReply, snapshot.style),
       );
     }
 
     if (containsEscalationKeyword(text, this.profile)) {
-      return this.escalate(message, "Escalation keyword detected", this.profile.handoffReply);
+      return this.escalate(
+        message,
+        "Escalation keyword detected",
+        this.humanizeConfiguredReply(this.profile.handoffReply, snapshot.style),
+      );
     }
 
     if (isLikelyComplexRequest(text)) {
-      return this.escalate(message, "Complex request detected", this.profile.handoffReply);
+      return this.escalate(
+        message,
+        "Complex request detected",
+        this.humanizeConfiguredReply(this.profile.handoffReply, snapshot.style),
+      );
     }
 
     const intent = detectFaqIntent(text, this.profile);
@@ -149,13 +166,25 @@ export class RespawnSupportAgent {
       return this.escalate(
         message,
         "Long ambiguous message needs human review",
-        this.profile.handoffReply,
+        this.humanizeConfiguredReply(this.profile.handoffReply, snapshot.style),
       );
     }
 
+    const fallback =
+      snapshot.style.formality === "casual"
+        ? stablePick(key, [
+            "Quick one — is this about pricing, availability, booking, or delivery?",
+            "Got you. Is this pricing, availability, booking, or delivery?",
+            "Which one is it: pricing, availability, booking, or delivery?",
+          ])
+        : stablePick(key, [
+            this.profile.fallbackReply,
+            "Thanks for reaching out. Is this about pricing, availability, booking, or delivery?",
+          ]);
+
     return {
       kind: "faq",
-      replyText: this.profile.fallbackReply,
+      replyText: snapshot.style.usesContractions ? applyContractions(fallback) : fallback,
       reason: "Fallback clarification",
     };
   }
@@ -182,6 +211,10 @@ export class RespawnSupportAgent {
     }
 
     return { kind: "ignore", reason: "Owner message not treated as command" };
+  }
+
+  private humanizeConfiguredReply(text: string, style: { usesContractions: boolean }): string {
+    return style.usesContractions ? applyContractions(text) : text;
   }
 
   private escalate(

@@ -80,6 +80,15 @@ export interface ClientSnapshot {
   isReturning: boolean;
   lastServiceMention: string | null;
   priorMessages: IncomingMessage[];
+  style: ResponseStyle;
+}
+
+export interface ResponseStyle {
+  formality: "casual" | "neutral" | "formal";
+  brevity: "short" | "medium" | "long";
+  usesContractions: boolean;
+  usesExclamation: boolean;
+  usesGreeting: boolean;
 }
 
 export interface IntentMatch {

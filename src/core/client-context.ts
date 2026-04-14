@@ -1,4 +1,5 @@
 import type { BusinessProfile, ClientSnapshot, IncomingMessage } from "../types/index.js";
+import { inferResponseStyle } from "./response-style.js";
 
 function inferLastServiceMention(
   messages: readonly IncomingMessage[],
@@ -29,5 +30,6 @@ export function buildClientSnapshot(
     isReturning: priorMessages.length > 0,
     lastServiceMention: inferLastServiceMention(priorMessages, profile),
     priorMessages,
+    style: inferResponseStyle(priorMessages),
   };
 }
