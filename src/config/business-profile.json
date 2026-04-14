@@ -1,0 +1,83 @@
+{
+  "businessName": "Northstar Creative Studio",
+  "ownerName": "Mary",
+  "ownerTarget": "iMessage;+15550001111",
+  "approvedSenders": "*",
+  "unknownSenderPolicy": "reply-briefly",
+  "handoffReply": "Got it — I have shared this with the owner and you will get a reply shortly.",
+  "fallbackReply": "Thanks for reaching out. Are you asking about pricing, availability, booking, or delivery?",
+  "escalationKeywords": [
+    "urgent",
+    "problem",
+    "issue",
+    "help",
+    "refund",
+    "complaint",
+    "cancel",
+    "custom",
+    "customize",
+    "bespoke",
+    "angry"
+  ],
+  "services": [
+    {
+      "name": "Portrait Session",
+      "startingPrice": "$90",
+      "duration": "45 mins"
+    },
+    {
+      "name": "Brand Shoot",
+      "startingPrice": "$150",
+      "duration": "1 hour"
+    },
+    {
+      "name": "Event Coverage",
+      "startingPrice": "$300",
+      "duration": "2 hours"
+    }
+  ],
+  "faqs": [
+    {
+      "id": "pricing",
+      "label": "Pricing",
+      "keywords": ["price", "pricing", "cost", "rate", "fee", "how much"],
+      "answer": "Portrait sessions start at $90, brand shoots start at $150, and event coverage starts at $300.",
+      "cta": "If you want an exact quote, send the service you need and your preferred date."
+    },
+    {
+      "id": "availability",
+      "label": "Availability",
+      "keywords": ["available", "availability", "free", "slot", "open", "date", "book"],
+      "answer": "We currently take bookings on weekdays and Saturdays based on availability.",
+      "cta": "Send your preferred date and service and I can help you check the next open slot."
+    },
+    {
+      "id": "delivery",
+      "label": "Delivery Area",
+      "keywords": ["deliver", "delivery", "lagos", "location", "where", "area", "island", "mainland"],
+      "answer": "We currently serve clients across Lagos mainland and the island.",
+      "cta": "If you have a specific area in mind, send it and I will confirm."
+    },
+    {
+      "id": "booking",
+      "label": "Booking",
+      "keywords": ["book", "booking", "reserve", "schedule", "appointment"],
+      "answer": "To book, send the service you want, your preferred date, and any important details for the session.",
+      "cta": "Once I have that, I can pass it along for confirmation."
+    },
+    {
+      "id": "turnaround",
+      "label": "Turnaround",
+      "keywords": ["turnaround", "delivery time", "when ready", "how long", "ready"],
+      "answer": "Standard turnaround is 5 business days after the session.",
+      "cta": "If you need a rush timeline, mention it and the owner can confirm."
+    },
+    {
+      "id": "refunds",
+      "label": "Refund Policy",
+      "keywords": ["refund", "refunds", "cancel", "cancellation", "deposit"],
+      "answer": "Deposits are non-refundable, but one reschedule is allowed with at least 48 hours notice.",
+      "cta": "If your situation is unusual, I can flag it for the owner."
+    }
+  ]
+}

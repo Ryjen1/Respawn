@@ -1,0 +1,23 @@
+{
+  "name": "respawn",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/exec-bin.mjs tsc -p tsconfig.json",
+    "demo": "pnpm run build && node dist/index.js --mock",
+    "dev:mock": "node scripts/exec-bin.mjs tsx src/index.ts --mock",
+    "repl": "pnpm run build && node dist/repl.js",
+    "type-check": "node scripts/exec-bin.mjs tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@photon-ai/imessage-kit": "2.1.2",
+    "better-sqlite3": "^12.5.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.15",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.3"
+  }
+}
